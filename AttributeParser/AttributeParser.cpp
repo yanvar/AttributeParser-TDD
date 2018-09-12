@@ -109,6 +109,7 @@ AttributeParserNode* AttributeParser::find_node_by_tag_name(const std::string& t
 
 
 
+
 bool AttributeParser::submit_query(const std::string& query, std::string &query_result)
 {
 	std::vector<std::string> queried_tags_vec;
