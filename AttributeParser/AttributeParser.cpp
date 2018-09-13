@@ -84,6 +84,8 @@ void AttributeParser::extract_tags_to_vector(std::istringstream &iss, std::vecto
 }
 
 
+
+
 void AttributeParser::clear_unwanted_charecters(std::string &k)
 {
 	k.erase(std::remove(k.begin(), k.end(), '/'), k.end());
