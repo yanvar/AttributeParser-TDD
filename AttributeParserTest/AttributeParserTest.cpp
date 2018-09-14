@@ -191,4 +191,24 @@ TEST(TestAttributeParser, HRMLWithTwoTagsRootAndChild_AddCHildToTheChildWithOneK
 	EXPECT_STREQ(answer.c_str(), "YoYo");
 }
 
+TEST(TestAttributeParser, HRMLWithOneTag_AddTagOnNewHirarchyAndQueryForAddedTag_QueryRetrurnValue)
+{
+	AttributeParser ap;
+	std::string line1("<tag1 value1 = \"Hello\" value2 = \"World\">");
+	std::string line2("</tag1>");
+	std::string line3("<tag2 value2 = \"WhatsUp\">");
+	std::string line4("</tag2>");
+	std::string query("tag2~value2");
+	std::string answer;
+
+	ap.add_tags(line1);
+	ap.add_tags(line2);
+	ap.add_tags(line3);
+	ap.add_tags(line4);
+
+	bool is_query_exsist = ap.submit_query(query, answer);
+
+	EXPECT_TRUE(is_query_exsist);
+	EXPECT_STREQ(answer.c_str(), "WhatsUp");
+}
 
