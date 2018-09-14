@@ -84,8 +84,6 @@ void AttributeParser::extract_tags_to_vector(std::istringstream &iss, std::vecto
 }
 
 
-
-
 void AttributeParser::clear_unwanted_charecters(std::string &k)
 {
 	k.erase(std::remove(k.begin(), k.end(), '/'), k.end());
@@ -94,89 +92,76 @@ void AttributeParser::clear_unwanted_charecters(std::string &k)
 }
 
 
-AttributeParserNode* AttributeParser::find_node_by_tag_name(const std::string& tag_name)
+AttributeParserNode* AttributeParserNode::find_node_by_tag_name(const std::string& tag_name)
 {
 	AttributeParserNode* node_ptr = NULL;
 	unsigned int j;
 	
-	for (j = 0; j < ap_node.child_vec.size(); ++j)
+	for (j = 0; j < child_vec.size(); ++j)
 	{
 //		LOG << "here!!!!" << curr_node_ptr->child_vec[j].open_tag << " : " << queried_tags_vec[i] << std::endl;
-		if (ap_node.child_vec[j].open_tag == tag_name)
+		if (child_vec[j].open_tag == tag_name)
 		{
-			node_ptr = &ap_node;
+			node_ptr = &(child_vec[j]);
 			break;
 		}
 	}
 	return node_ptr;
 }
 
-
+bool AttributeParserNode::find_value_by_key(const std::string& key, std::string& value)
+{
+	unsigned int i;
+	for (i = 0; i < item_vec.size(); ++i)
+	{
+		if (key == item_vec[i].get_key())
+		{
+			LOG << "Found final match, yesssss" << std::endl;
+			value = item_vec[i].get_value();
+			return true;
+		}
+	}
+	return false;
+}
 
 
 bool AttributeParser::submit_query(const std::string& query, std::string &query_result)
 {
 	std::vector<std::string> queried_tags_vec;
 	std::string quried_key;
-	bool found_match = true;
-	unsigned int i, j;
+	unsigned int i;
+	query_result = "";
 
 	parse_query(query, quried_key, queried_tags_vec);
+
 	LOG << "quried_key=" << quried_key <<  std::endl;
 	AttributeParserNode* curr_node_ptr = &ap_node;	
 	if (queried_tags_vec[0] == ap_node.open_tag)
 	{
+		bool found_match = true;
 		LOG << "Keep going....." << std::endl;
 		for (i = 1; i < queried_tags_vec.size(); ++i)
 		{
-			bool found_tag = false;
-			LOG << "queried_tags_vec=" << queried_tags_vec[i] << std::endl;
-			LOG << "current_node_ptr->child_vec.size()=" << curr_node_ptr->child_vec.size() << std::endl;
-			for (j = 0; j < curr_node_ptr->child_vec.size(); ++j)
-			{
-				LOG << "here!!!!" << curr_node_ptr->child_vec[j].open_tag << " : " << queried_tags_vec[i] << std::endl;
-				if (curr_node_ptr->child_vec[j].open_tag == queried_tags_vec[i])
-				{
-					LOG << "Found match for: " << queried_tags_vec[i] << std::endl;
-					found_tag = true;
-					curr_node_ptr = &(curr_node_ptr->child_vec[j]);
-					break;
-				}
-			}
-			if (found_tag == false)
+			curr_node_ptr = curr_node_ptr->find_node_by_tag_name(queried_tags_vec[i]);
+			if (curr_node_ptr == NULL)
 			{
 				LOG << "No Match for: " << queried_tags_vec[i] << std::endl;
 				found_match = false;
 				break;
 			}
 		}
-	}
-	else
-		found_match = false;
-
-	if(found_match == false)
-	{
-		LOG << "No Match, retrun false" <<  std::endl;
-		query_result = "";
-		return false;
-	}
-	else
-	{
-		LOG << "Look for quried key: " << quried_key << std::endl;
-		for (i = 0; i < curr_node_ptr->item_vec.size(); ++i)
+		if (found_match == false)
 		{
-			if (quried_key == curr_node_ptr->item_vec[i].get_key())
-			{
-				LOG << "Found final match, yesssss" << std::endl;
-				query_result = curr_node_ptr->item_vec[i].get_value();
-				return true;
-			}
-			
+			LOG << "No Match, retrun false" << std::endl;
+			return false;
 		}
-		LOG << "No Match, retrun false" << std::endl;
-		query_result = "";
-		return false;
+		else
+		{
+			return curr_node_ptr->find_value_by_key(quried_key, query_result);
+		}
 	}
+	else
+		return false;
 }
 
 
@@ -199,5 +184,4 @@ void AttributeParser::parse_query(const std::string & query, std::string &quried
 	std::cout << "queried_tag= " << queried_tag << std::endl;
 	queried_tags_vec.push_back(queried_tag);
 }
-// 	std::string query("tag1~value1");
 

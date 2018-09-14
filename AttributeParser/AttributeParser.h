@@ -31,6 +31,8 @@ public:
 	std::vector<AttributeParserItem> item_vec;
 	std::vector<AttributeParserNode> child_vec;
 	AttributeParserNode* parent;
+	AttributeParserNode* find_node_by_tag_name(const std::string& tag_name);
+	bool find_value_by_key(const std::string& key, std::string& value);
 };
 
 class AttributeParser
@@ -46,8 +48,8 @@ private:
 	void initialize_node(std::vector<std::string> &tokens, AttributeParserNode &apn, AttributeParserNode* parent = NULL);
 	bool line_is_closing_tag(const std::string& line);
 	bool nodes_are_uninitialized() { return tags_stack.empty(); }
+	
 
-	AttributeParserNode* find_node_by_tag_name(const std::string& tag_name);
 	std::deque<std::string> tags_stack;
 	AttributeParserNode* current_father_node_ptr;
 	AttributeParserNode ap_node;
