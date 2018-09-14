@@ -27,8 +27,12 @@ void AttributeParser::add_tags(const std::string& tags)
 
 	if (nodes_are_uninitialized())
 	{
-		initialize_node(tokens,ap_node);
+		AttributeParserNode attribute_parse_child;
+		initialize_node(tokens, attribute_parse_child);
+		ap_node_vec.push_back(attribute_parse_child);
+		current_father_node_ptr = &(ap_node_vec[num_of_ap_nodes]);
 		tags_stack.push_front(open_tag);
+		num_of_ap_nodes++;
 	}
 	else
 	{
@@ -36,6 +40,7 @@ void AttributeParser::add_tags(const std::string& tags)
 		{
 			tags_stack.pop_front();
 			current_father_node_ptr = current_father_node_ptr->parent;
+			
 		}
 		else
 		{
@@ -108,7 +113,6 @@ bool AttributeParserNode::find_value_by_key(const std::string& key, std::string&
 	{
 		if (key == item_vec[i].get_key())
 		{
-			LOG << "Found final match, yesssss" << std::endl;
 			value = item_vec[i].get_value();
 			return true;
 		}
@@ -117,31 +121,38 @@ bool AttributeParserNode::find_value_by_key(const std::string& key, std::string&
 }
 
 
-bool AttributeParser::submit_query(const std::string& query, std::string &query_result)
-{
-	std::vector<std::string> queried_tags_vec;
-	std::string quried_key;
-	unsigned int i;
-	query_result = "";
-
-	parse_query(query, quried_key, queried_tags_vec);
-
-	AttributeParserNode* curr_node_ptr = &ap_node;	
-	if (queried_tags_vec[0] == ap_node.open_tag)
+	bool AttributeParser::submit_query(const std::string& query, std::string &query_result)
 	{
-		for (i = 1; i < queried_tags_vec.size(); ++i)
+		std::vector<std::string> queried_tags_vec;
+		std::string quried_key;
+		unsigned int i,j;
+		query_result = "";
+
+		parse_query(query, quried_key, queried_tags_vec);
+
+		for (j=0;j<num_of_ap_nodes; j++)
 		{
-			curr_node_ptr = curr_node_ptr->find_node_by_tag_name(queried_tags_vec[i]);
-			if (curr_node_ptr == NULL)
+			AttributeParserNode* curr_node_ptr = &(ap_node_vec[j]);
+			if (queried_tags_vec[0] == curr_node_ptr->open_tag)
 			{
-				return false;
+				for (i=1;i<queried_tags_vec.size(); ++i)
+				{
+					LOG << "here1" << std::endl;
+					curr_node_ptr = curr_node_ptr->find_node_by_tag_name(queried_tags_vec[i]);
+					LOG << "here2" << std::endl;
+					if (curr_node_ptr == NULL)
+					{
+						break;
+					}
+				}
+				if(curr_node_ptr)
+					return curr_node_ptr->find_value_by_key(quried_key, query_result);
 			}
+			else
+				continue;
 		}
-		return curr_node_ptr->find_value_by_key(quried_key, query_result);
-	}
-	else
 		return false;
-}
+	}
 
 
 void AttributeParser::parse_query(const std::string & query, std::string &quried_key, std::vector<std::string> &queried_tags_vec)

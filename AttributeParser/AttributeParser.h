@@ -38,9 +38,10 @@ public:
 class AttributeParser
 {
 public:
-	AttributeParser() { current_father_node_ptr = &ap_node;}
+	AttributeParser() { num_of_ap_nodes = 0;}
 	bool submit_query(const std::string& query, std::string &query_result);
 	void add_tags(const std::string& tags);
+
 private:
 	void parse_query(const std::string & query, std::string &quried_key, std::vector<std::string> &queried_tags_vec);
 	void clear_unwanted_charecters(std::string &k);
@@ -52,10 +53,9 @@ private:
 
 	std::deque<std::string> tags_stack;
 	AttributeParserNode* current_father_node_ptr;
-	AttributeParserNode ap_node;
+	std::vector<AttributeParserNode> ap_node_vec;
+	unsigned int num_of_ap_nodes;
 };
-
-
 
 
 
